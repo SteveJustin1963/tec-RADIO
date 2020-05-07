@@ -16,6 +16,11 @@
 ![](https://github.com/SteveJustin1963/tec-RADIO/blob/master/AM%20TX/et-fone-home.png)
 
 ## SPARK TX
+
+"Scott Gregory So where does the spark gap and Morse key fit into all this? 😂 
+Will we also need a rotary converter to power the TEC? 😂
+" Ken Stone Rotary converter? Sure, I have a couple of those. http://fav.me/d2bh811
+
 * https://easyeda.com/editor#id=2cb44aecf83f4266a0655c89954175fc
 
 
