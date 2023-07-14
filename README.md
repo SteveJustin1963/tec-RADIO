@@ -24,7 +24,8 @@ Will we also need a rotary converter to power the TEC? 😂
 * https://easyeda.com/editor#id=2cb44aecf83f4266a0655c89954175fc
 
 
-### https://www.qsl.net/vu2awc/ham_radio_india_p/Pixie/iitckt.JPG
+## Pixie
+- https://www.qsl.net/vu2awc/ham_radio_india_p/Pixie/iitckt.JPG
 
 ![image](https://github.com/SteveJustin1963/tec-RADIO/assets/58069246/e10f939f-c27b-4454-b8e1-4222af0579db)
 
