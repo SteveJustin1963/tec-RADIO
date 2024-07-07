@@ -41,3 +41,12 @@ Will we also need a rotary converter to power the TEC? 😂
 - class E PA
 - 
 
+## DDS
+### AD9850 DDS Signal Generator Module
+![image](https://github.com/SteveJustin1963/tec-RADIO/assets/58069246/2de4c1d4-d60e-4c46-8252-35680b54d5eb)
+
+![image](https://github.com/SteveJustin1963/tec-RADIO/assets/58069246/264ad808-bcbd-4021-a949-a04bd0da0a37)
+
+
+
+ 
