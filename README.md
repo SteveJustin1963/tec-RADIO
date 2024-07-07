@@ -48,8 +48,7 @@ Will we also need a rotary converter to power the TEC? 😂
 ![image](https://github.com/SteveJustin1963/tec-RADIO/assets/58069246/264ad808-bcbd-4021-a949-a04bd0da0a37)
 
 https://telecnatron.com/articles/Variable-Gain-Amplifier-For-AD9850-DDS/index.html
-
-![image](https://github.com/SteveJustin1963/tec-RADIO/assets/58069246/a37c7950-3b87-4693-b19e-46285d522015)
+ 
 
 ![image](https://github.com/SteveJustin1963/tec-RADIO/assets/58069246/3348f0d2-9439-44dc-8f3e-dfa1475aad72)
 
