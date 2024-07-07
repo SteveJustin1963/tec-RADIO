@@ -1,0 +1,61 @@
+; Z80 Assembly code to control AD9850 DDS module
+; Assuming that the DATA, W_CLK, and FU_UD are connected to specific Z80 ports
+
+DATA_PORT   EQU 0x00 ; Replace with the actual port connected to DATA
+W_CLK_PORT  EQU 0x01 ; Replace with the actual port connected to W_CLK
+FU_UD_PORT  EQU 0x02 ; Replace with the actual port connected to FU_UD
+RESET_PORT  EQU 0x03 ; Replace with the actual port connected to RESET
+
+; Function to send a byte to the AD9850
+SEND_BYTE:
+    LD A, (HL)       ; Load the byte to send from memory
+    LD B, 8          ; Set the bit counter
+SEND_BIT:
+    OUT (DATA_PORT), A  ; Send the MSB of A to the DATA port
+    RLC A            ; Rotate left to shift the next bit into the MSB
+    OUT (W_CLK_PORT), A ; Pulse the W_CLK pin
+    NOP              ; Small delay
+    NOP
+    DJNZ SEND_BIT    ; Repeat for all 8 bits
+    RET
+
+; Function to send a frequency word to the AD9850
+SEND_FREQ:
+    LD HL, FREQUENCY_WORD ; Point to the frequency word in memory
+    LD C, 5           ; 5 bytes to send (32-bit frequency word + 8-bit control byte)
+SEND_WORD:
+    CALL SEND_BYTE    ; Send each byte of the frequency word
+    INC HL            ; Move to the next byte
+    DEC C             ; Decrease the counter
+    JR NZ, SEND_WORD  ; Repeat for all 5 bytes
+    RET
+
+; Main program
+START:
+    DI                ; Disable interrupts
+    LD A, 0x00
+    OUT (RESET_PORT), A  ; Reset the AD9850
+    NOP              ; Small delay
+    NOP
+    LD A, 0xFF
+    OUT (RESET_PORT), A  ; Set the RESET pin high
+
+    ; Send frequency
+    CALL SEND_FREQ
+
+    ; Update the frequency register
+    LD A, 0x01
+    OUT (FU_UD_PORT), A
+    NOP              ; Small delay
+    NOP
+    LD A, 0x00
+    OUT (FU_UD_PORT), A
+
+    EI                ; Enable interrupts
+    HALT              ; Halt the CPU
+
+; Define the frequency word (5 bytes: 4 bytes for frequency, 1 byte for control)
+FREQUENCY_WORD:
+    DB 0x80, 0xE9, 0x60, 0x0E, 0x00 ; Frequency word for 7.023 MHz, last byte control
+
+    END START
