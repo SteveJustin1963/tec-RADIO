@@ -6,6 +6,10 @@
 
 ![](https://github.com/SteveJustin1963/tec-RADIO/blob/master/AM%20RX/am%20regen%20tec1%20hack.png)
 
+![image](https://github.com/SteveJustin1963/tec-RADIO/assets/58069246/0319494f-4f6e-4f2a-b9cc-01d123fc666f)
+
+
+
 ## parts
 * https://www.google.com/search?q=ferrite+antenna
 * https://www.aliexpress.com/item/4000666271308.html
