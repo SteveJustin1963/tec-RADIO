@@ -1,0 +1,126 @@
+; Define ports and constants
+DATA_PORT   EQU 0x00  ; DDS Data port
+W_CLK_PORT  EQU 0x01  ; DDS W_CLK port
+FU_UD_PORT  EQU 0x02  ; DDS FU_UD port
+RESET_PORT  EQU 0x03  ; DDS Reset port
+KEYPAD_PORT EQU 0x04  ; Keypad port
+LCD_PORT    EQU 0x05  ; LCD Data port
+MAX_FREQ    EQU 10000000  ; Max frequency = 10 MHz
+
+; Frequency Buffer (6-digit BCD input)
+FREQ_BUFFER: DS 6  ; Store the 6-digit frequency in BCD format
+
+; Main Program Entry
+START:
+    DI                      ; Disable interrupts
+    CALL INIT_SYSTEM         ; Initialize the entire system (DDS and LCD)
+    
+MAIN_LOOP:
+    CALL DISPLAY_CURRENT_FREQ   ; Display current frequency on LCD
+    CALL HANDLE_KEYPAD_INPUT    ; Handle keypad input
+    JP MAIN_LOOP                ; Loop back to the main loop
+
+; Initialize the system (DDS and LCD)
+INIT_SYSTEM:
+    CALL INIT_DDS              ; Initialize DDS module
+    CALL INIT_LCD              ; Initialize LCD display
+    RET
+
+; Initialize DDS module
+INIT_DDS:
+    LD A, 0x00
+    OUT (RESET_PORT), A        ; Reset DDS
+    NOP                        ; Small delay
+    NOP
+    LD A, 0xFF
+    OUT (RESET_PORT), A        ; End reset
+    RET
+
+; Initialize LCD display
+INIT_LCD:
+    ; LCD initialization code specific to your setup (LCD1602)
+    RET
+
+; Display the current frequency on the LCD
+DISPLAY_CURRENT_FREQ:
+    LD HL, FREQ_BUFFER         ; Point to the frequency buffer
+    CALL BCD_TO_ASCII           ; Convert BCD to ASCII
+    CALL LCD_PRINT_STRING       ; Print the ASCII string to the LCD
+    RET
+
+; Handle keypad input and take action accordingly
+HANDLE_KEYPAD_INPUT:
+    CALL CHECK_KEYPAD           ; Check for keypad input
+    CP 'F'                      ; Is 'F' key pressed for frequency input?
+    JP Z, GET_FREQ_INPUT        ; If 'F', jump to frequency input
+    RET
+
+; Get frequency input from keypad
+GET_FREQ_INPUT:
+    LD HL, FREQ_BUFFER          ; Point to the frequency buffer
+    CALL READ_FREQUENCY         ; Read 6 digits from the keypad into the buffer
+    CALL SET_DDS_FREQ           ; Set the new DDS frequency
+    RET
+
+; Check for a key press from the keypad
+CHECK_KEYPAD:
+    IN A, (KEYPAD_PORT)         ; Read keypad port
+    AND A                       ; Check if any key is pressed
+    RET Z                       ; Return if no key pressed
+    LD L, A                     ; Store the pressed key in L
+    RET
+
+; Read frequency input from the keypad (6 digits)
+READ_FREQUENCY:
+    LD B, 6                     ; Expect 6 digits
+READ_DIGIT:
+    CALL CHECK_KEYPAD           ; Wait for key press
+    LD (HL), L                  ; Store the pressed key in the buffer
+    INC HL                      ; Move to the next buffer location
+    DJNZ READ_DIGIT             ; Repeat for 6 digits
+    RET
+
+; Convert the BCD frequency in FREQ_BUFFER to a DDS 32-bit word and send it to DDS
+SET_DDS_FREQ:
+    ; Convert 6-digit BCD to 32-bit DDS word (add your conversion logic here)
+    CALL SEND_FREQ_TO_DDS        ; Send the frequency word to DDS
+    RET
+
+; Send the 32-bit frequency to the DDS
+SEND_FREQ_TO_DDS:
+    LD HL, FREQ_BUFFER           ; Point to frequency buffer
+    LD C, 5                      ; 5 bytes to send (4-byte frequency + 1 control byte)
+SEND_WORD:
+    CALL SEND_BYTE_TO_DDS        ; Send a single byte
+    INC HL                       ; Move to the next byte
+    DEC C                        ; Decrement byte counter
+    JR NZ, SEND_WORD             ; Continue sending until all bytes are sent
+    RET
+
+; Send one byte to the DDS
+SEND_BYTE_TO_DDS:
+    LD A, (HL)                   ; Load byte from buffer
+    LD B, 8                      ; 8 bits to send
+SEND_BIT:
+    RLA                          ; Rotate A left, MSB to carry
+    LD A, 0                      ; Clear A
+    ADC A, 0                     ; Add carry to A
+    OUT (DATA_PORT), A           ; Send MSB to DATA_PORT
+    LD A, 0x01
+    OUT (W_CLK_PORT), A          ; W_CLK high
+    LD A, 0x00
+    OUT (W_CLK_PORT), A          ; W_CLK low
+    DJNZ SEND_BIT                ; Repeat for all 8 bits
+    RET
+
+; Convert BCD to ASCII for display on the LCD
+BCD_TO_ASCII:
+    ; Conversion logic to convert BCD in FREQ_BUFFER to ASCII for LCD display
+    ; (Implement your BCD to ASCII conversion logic here)
+    RET
+
+; Print the string stored in the buffer to the LCD
+LCD_PRINT_STRING:
+    ; Send each character to the LCD via LCD_PORT
+    ; (Add your logic to print the ASCII string to the LCD)
+    RET
