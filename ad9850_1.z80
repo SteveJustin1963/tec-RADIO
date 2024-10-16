@@ -1,26 +1,6 @@
-```
-To implement a **main loop** that allows you to set and change the frequency using a hex keypad and display it on an LCD, here's how you can structure your Z80 assembly code.
+ 
 
-We'll need:  
-1. **Main loop** to continuously check for input.
-2. **Reading the frequency** from the hex keypad.
-3. **Displaying the frequency** on an LCD display (likely an LCD1602).
-4. **Sending the frequency** to the AD9850 DDS module.
-5. **Handling inputs** (e.g., pressing 'F' to change the frequency).
-
----
-
-### **Proposed Flow:**
-1. **Main Loop:** Wait for key press. If 'F' is pressed, enter frequency input mode.
-2. **Frequency Input:** User enters up to 6 digits (max frequency 10 MHz).
-3. **Send Frequency:** Convert input to a 32-bit frequency word for the DDS.
-4. **Display Frequency:** Show the frequency on the LCD.
-
----
-
-### **Z80 Code Implementation:**
-
-```assembly
+ 
 ; Z80 Assembly code to control AD9850 and display frequency on an LCD.
 ; Ports for AD9850 DDS
 DATA_PORT   EQU 0x00  ; DDS Data port
@@ -148,35 +128,4 @@ LCD_PRINT:
     ; Add your LCD printing logic here
     RET
 
-    END START
-```
-
----
-
-### **Explanation of the Code:**
-
-1. **Main Loop:**
-   - Continuously displays the current frequency on the LCD.
-   - Waits for the user to press 'F' on the keypad to enter frequency input mode.
-
-2. **Frequency Input:**
-   - The user enters 6 digits on the keypad, which are stored in `FREQ_BUFFER`.
-
-3. **Send Frequency to DDS:**
-   - After entering the frequency, the code converts it to a 32-bit word and sends it to the DDS module.
-
-4. **LCD Display:**
-   - The frequency is displayed in ASCII format on the LCD.
-
-5. **Keypad Handling:**
-   - The code reads key presses from the keypad and processes them accordingly.
-
----
-
-### **Next Steps:**
-
-- Implement **BCD to DDS frequency scaling** to convert the user input to a valid 32-bit word for the DDS.
-- Add **BCD to ASCII conversion logic** for displaying the frequency.
-- Adjust the **LCD initialization and printing routines** based on your LCD module.
  
-```
