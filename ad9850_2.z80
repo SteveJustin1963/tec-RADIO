@@ -6,9 +6,12 @@ RESET_PORT  EQU 0x03  ; DDS Reset port
 KEYPAD_PORT EQU 0x04  ; Keypad port
 LCD_PORT    EQU 0x05  ; LCD Data port
 MAX_FREQ    EQU 10000000  ; Max frequency = 10 MHz
+REF_CLK     EQU 125000000 ; Reference Clock Frequency = 125 MHz
+TWO_POW_32  EQU 4294967296 ; 2^32 constant
 
 ; Frequency Buffer (6-digit BCD input)
-FREQ_BUFFER: DS 6  ; Store the 6-digit frequency in BCD format
+FREQ_BUFFER: DS 6      ; Store the 6-digit frequency in BCD format
+TUNING_WORD: DS 4      ; 4-byte buffer to hold the 32-bit tuning word
 
 ; Main Program Entry
 START:
@@ -59,6 +62,7 @@ HANDLE_KEYPAD_INPUT:
 GET_FREQ_INPUT:
     LD HL, FREQ_BUFFER          ; Point to the frequency buffer
     CALL READ_FREQUENCY         ; Read 6 digits from the keypad into the buffer
+    CALL CALC_TUNING_WORD       ; Calculate the 32-bit tuning word
     CALL SET_DDS_FREQ           ; Set the new DDS frequency
     RET
 
@@ -80,15 +84,109 @@ READ_DIGIT:
     DJNZ READ_DIGIT             ; Repeat for 6 digits
     RET
 
-; Convert the BCD frequency in FREQ_BUFFER to a DDS 32-bit word and send it to DDS
+; Convert the BCD frequency in FREQ_BUFFER to a 32-bit tuning word and store it in TUNING_WORD
+CALC_TUNING_WORD:
+    ; Convert BCD to actual frequency in Hz
+    LD HL, FREQ_BUFFER          ; Point to frequency buffer (BCD)
+    CALL BCD_TO_FREQ            ; Convert BCD to actual frequency in HL (16-bit)
+
+    ; Calculate Tuning Word
+    ; Formula: Tuning Word = (Desired Frequency * 2^32) / Reference Clock
+    ; Use multi-byte multiplication to calculate (Desired Frequency * 2^32) / 125000000
+
+    LD DE, TWO_POW_32           ; Load 2^32 into DE register pair
+    CALL MULT_32_16             ; Multiply Desired Frequency by 2^32
+
+    ; Now divide by the Reference Clock Frequency (125 MHz)
+    LD DE, REF_CLK              ; Load Reference Clock into DE register pair
+    CALL DIV_32_BY_32           ; Divide the result by Reference Clock (DE)
+    
+    ; Store the result (Tuning Word) in TUNING_WORD
+    LD HL, TUNING_WORD
+    LD (HL), A                  ; Store the MSB of the result in TUNING_WORD
+    LD (HL+1), B
+    LD (HL+2), C
+    LD (HL+3), D
+    RET
+
+; Convert BCD in FREQ_BUFFER to actual frequency (in Hz) and store it in HL
+BCD_TO_FREQ:
+    LD HL, 0                    ; Clear HL (used to accumulate the result)
+    LD DE, 1                    ; DE will hold the power of 10 (starts at 1)
+    LD BC, FREQ_BUFFER + 5       ; Point BC to the least significant BCD digit
+
+CONVERT_BCD_LOOP:
+    LD A, (BC)                  ; Load current BCD digit
+    CALL BCD_TO_BIN             ; Convert BCD digit to binary
+    LD H, 0
+    LD L, A                     ; Result in HL
+
+    ; Multiply the current digit by its power of 10
+    CALL MULT_16_16             ; Multiply HL by DE (power of 10)
+    
+    ; Add the result to the running total in HL
+    ADD HL, DE                  ; Add the current frequency value to the total
+
+    ; Prepare the next power of 10
+    LD DE, 10                   ; Increase the power of 10 for next digit
+    CALL MULT_16_16             ; Multiply DE by 10
+
+    DEC BC                      ; Move to the next BCD digit (next more significant)
+    JP NZ, CONVERT_BCD_LOOP     ; Repeat for all digits
+
+    RET
+
+; Helper: Convert BCD digit to binary (single digit)
+BCD_TO_BIN:
+    ; Input: A contains BCD digit (0-9)
+    ; Output: A contains binary equivalent
+    AND 0x0F                    ; Mask out the high nibble (keep the low nibble)
+    RET
+
+; Multiply 32-bit number (A-D) by 16-bit number (HL)
+MULT_32_16:
+    ; Multiplies a 32-bit number (A-D) by a 16-bit number and stores the result in A-D
+    PUSH BC
+    PUSH DE
+    LD B, H
+    LD C, L                      ; Store HL in BC
+
+    LD DE, 0                     ; Clear DE
+    LD HL, 0                     ; Clear HL
+
+    ; Multiply
+    LD A, A
+    CALL MULT_BYTE               ; Multiply A by C (result in HL)
+    LD D, H                      ; Store result in D
+    LD E, L                      ; Store result in E
+    LD A, B
+    CALL MULT_BYTE               ; Multiply A by B (result in HL)
+    ADD HL, DE                   ; Add the two results together
+
+    POP DE
+    POP BC
+    RET
+
+; Divide 32-bit number (A-D) by 32-bit number (DE)
+DIV_32_BY_32:
+    ; Divides a 32-bit number (stored in A-D) by another 32-bit number (DE)
+    ; Result stored in A-D
+    ; Implement the division logic using subtraction method or your preferred method
+    LD A, D
+    LD B, E
+    LD C, L                      ; Divide A by BC
+    CALL DIVIDE_BYTE             ; Use byte division for now
+    RET
+
+; Set DDS frequency by sending the 32-bit tuning word to the DDS
 SET_DDS_FREQ:
-    ; Convert 6-digit BCD to 32-bit DDS word (add your conversion logic here)
+    LD HL, TUNING_WORD           ; Point to tuning word buffer
     CALL SEND_FREQ_TO_DDS        ; Send the frequency word to DDS
     RET
 
 ; Send the 32-bit frequency to the DDS
 SEND_FREQ_TO_DDS:
-    LD HL, FREQ_BUFFER           ; Point to frequency buffer
+    LD HL, TUNING_WORD           ; Point to frequency buffer
     LD C, 5                      ; 5 bytes to send (4-byte frequency + 1 control byte)
 SEND_WORD:
     CALL SEND_BYTE_TO_DDS        ; Send a single byte
