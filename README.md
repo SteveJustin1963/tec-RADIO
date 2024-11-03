@@ -74,6 +74,7 @@ Make sure to adjust the DATA_PORT, W_CLK_PORT, FU_UD_PORT, and RESET_PORT to mat
 
 
 
- 
-read this https://microcontrollerslab.com/interface-ad9850-dds-signal-generator-module-with-arduino-pinout-features/
-
+ ### ref
+- https://microcontrollerslab.com/interface-ad9850-dds-signal-generator-module-with-arduino-pinout-features/
+- https://electronics.pl7.de/home/dds-sine-signal-generator-for-am-modulation-from-1-hz-to-40-mhz-with-an-ad9850-or-ad9851-an-atmega328-and-an-arduino-firmware/
+- 
