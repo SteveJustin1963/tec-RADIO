@@ -70,3 +70,5 @@ In this example:
 0x00 is the control byte.
 Make sure to adjust the DATA_PORT, W_CLK_PORT, FU_UD_PORT, and RESET_PORT to match the actual ports used in your hardware setup.
  
+read this https://microcontrollerslab.com/interface-ad9850-dds-signal-generator-module-with-arduino-pinout-features/
+
