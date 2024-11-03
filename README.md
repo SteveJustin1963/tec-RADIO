@@ -69,6 +69,11 @@ In this example:
 0x80, 0xE9, 0x60, 0x0E are the 4 bytes representing the 32-bit frequency tuning word for 7.023 MHz.
 0x00 is the control byte.
 Make sure to adjust the DATA_PORT, W_CLK_PORT, FU_UD_PORT, and RESET_PORT to match the actual ports used in your hardware setup.
+
+ ![image](https://github.com/user-attachments/assets/56ce8647-e0d5-43d3-8f03-77fa6330b735)
+
+
+
  
 read this https://microcontrollerslab.com/interface-ad9850-dds-signal-generator-module-with-arduino-pinout-features/
 
